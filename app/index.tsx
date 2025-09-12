@@ -1,6 +1,7 @@
 import { haptic } from "../theme/haptics";
 // @ts-ignore: No type definitions for expo-speech
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import Voice from "@react-native-voice/voice";
 import * as Speech from "expo-speech";
 import { useEffect, useState as useLocalState, useRef, useState } from "react";
 import {
@@ -16,26 +17,46 @@ import AppMicButton from "../components/AppMicButton";
 import AppText from "../components/AppText";
 import { getColors } from "../theme/colors";
 import { SPACING } from "../theme/spacing";
-// --- Speech-to-text placeholder (replace with real implementation if available) ---
-function useSpeechToTextMock() {
+function useSpeechToText() {
   const [isListening, setIsListening] = useLocalState(false);
   const [transcript, setTranscript] = useLocalState("");
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    Voice.onSpeechResults = (e) => {
+      if (isMounted.current) setTranscript(e.value?.[0] || "");
+    };
+    Voice.onSpeechEnd = () => {
+      if (isMounted.current) setIsListening(false);
+    };
+    Voice.onSpeechError = () => {
+      if (isMounted.current) setIsListening(false);
+    };
+    return () => {
+      isMounted.current = false;
+      Voice.destroy().then(Voice.removeAllListeners);
+    };
+  }, []);
+
   const startListening = async () => {
-    setIsListening(true);
     setTranscript("");
-    setTimeout(() => {
-      setTranscript("مرحباً! هذا نص تجريبي من الميكروفون.");
-      setIsListening(false);
-    }, 2500);
+    setIsListening(true);
+    await Voice.start("ar-SA");
   };
-  const stopListening = async () => setIsListening(false);
+
+  const stopListening = async () => {
+    setIsListening(false);
+    await Voice.stop();
+  };
+
   return { isListening, transcript, startListening, stopListening };
 }
 
 export default function Home() {
   // Speech-to-text state
   const { isListening, transcript, startListening, stopListening } =
-    useSpeechToTextMock();
+    useSpeechToText();
   const scheme = useColorScheme();
   const [ttsEnabled, setTtsEnabled] = useState(false);
   const [highContrast, setHighContrast] = useState(false);
@@ -86,7 +107,7 @@ export default function Home() {
   // Announce page for screen readers
   useEffect(() => {
     AccessibilityInfo.announceForAccessibility(
-      "الصفحة الرئيسية، مرحباً بك في تطبيق أيين"
+      "الصفحة الرئيسية، مرحباً بك في تطبيق عين"
     );
     if (ttsEnabled) {
       Speech.speak(
@@ -139,7 +160,7 @@ export default function Home() {
           accessibilityRole="header"
           allowFontScaling
         >
-          👁️ أيين
+          👁️ عين
         </AppText>
         <AppText
           style={{
