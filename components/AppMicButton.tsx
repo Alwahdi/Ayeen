@@ -3,7 +3,6 @@ import React from "react";
 import { Platform, StyleSheet, TouchableOpacity } from "react-native";
 import { haptic } from "../theme/haptics";
 import { SPACING } from "../theme/spacing";
-import AppText from "./AppText";
 
 interface AppMicButtonProps {
   onPress: () => void;
@@ -29,15 +28,19 @@ const AppMicButton: React.FC<AppMicButtonProps> = ({
         haptic.notification("success");
         onPress();
       }}
-      activeOpacity={0.8}
+      activeOpacity={0.7}
       style={[
         styles.micButton,
-        { width: size + 24, height: size + 24, backgroundColor },
+        { 
+          width: size + 32, 
+          height: size + 32, 
+          backgroundColor,
+          borderRadius: (size + 32) / 2,
+        },
         Platform.OS === "ios" ? styles.iosShadow : styles.androidShadow,
       ]}
     >
-      <MaterialCommunityIcons name="microphone" size={size} color={color} />
-      <AppText style={styles.label}>تحدث الآن</AppText>
+      <MaterialCommunityIcons name="microphone" size={size * 0.6} color={color} />
     </TouchableOpacity>
   );
 };
@@ -52,12 +55,12 @@ const styles = StyleSheet.create({
   },
   iosShadow: {
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3,
+    shadowRadius: 16,
   },
   androidShadow: {
-    elevation: 8,
+    elevation: 12,
   },
   label: {
     marginTop: SPACING.sm,
